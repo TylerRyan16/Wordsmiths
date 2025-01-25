@@ -1,0 +1,49 @@
+.lobby-selector{
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.horizontal-flex{
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.label{
+    font-size: 32px;
+}
+
+.player-name, .entered-lobby-code{
+    width: 100%;
+    align-self: center;
+    height: 70px;
+    border-radius: 16px;
+    border: none;
+    background-color: #d7c3b4;
+    font-size: 32px;
+}
+
+.create-lobby-button, .join-lobby-button{
+    margin-top: auto;
+    padding: 25px 200px;
+    text-decoration: none;
+    color: black;
+    background-color: #d7c3b4;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 40px;
+    width: 100%;
+}
+
+.join-lobby-button{
+    margin-bottom: 45%;
+}
+
+
+
+
+.create-lobby-button:hover, .join-lobby-button:hover {
+    background-color: #eadfd7;
+}

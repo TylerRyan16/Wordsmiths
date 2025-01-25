@@ -1,0 +1,25 @@
+.lobby-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;   
+    min-height: 92vh;
+}
+
+.start-game-button{
+    margin-top: auto;
+    padding: 25px 200px;
+    margin-bottom: 100px;
+    text-decoration: none;
+    color: black;
+    background-color: #e3d5ca;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 40px;
+}
+
+.start-game-button:hover {
+    background-color: #eadfd7;
+}
