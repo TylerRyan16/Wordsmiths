@@ -40,18 +40,20 @@ app.post("/create-lobby", (req, res) => {
 io.on("connection", (socket) => {
     // JOIN LOBBY 
     socket.on("join-lobby", (lobbyId, playerName) => {
-
+        // INVALID LOBBY
         if (!lobbies[lobbyId]) {
             socket.emit("error", "Lobby does not exist");
             return;
         }
 
+        // CHECK IF PLAYER ALREADY EXISTS
         const existingPlayer = lobbies[lobbyId].find((p) => p.id === socket.id);
         if (!existingPlayer) {
             const player = { 
                 id: socket.id, 
                 name: playerName || "Anonymous",
                 hand: [],
+                letters: [],
                 points: 0,
                 skipped: false 
 
@@ -74,6 +76,7 @@ io.on("connection", (socket) => {
             return;
         }
 
+        // INVALID LOBBY
         if (!lobbies[lobbyId]) {
             socket.emit("error", "Lobby does not exist");
             return;
@@ -85,7 +88,7 @@ io.on("connection", (socket) => {
             // store the game in the lobby
             lobbies[lobbyId].game = currentGame;
 
-            io.to(lobbyId).emit("start-game", lobbyId);
+            io.to(lobbyId).emit("start-game", { code: lobbyId, players: lobbies[lobbyId] });
         } catch (error) {
             console.error("Failed to start game: ", error);
             socket.emit("error", "failed to start game");
