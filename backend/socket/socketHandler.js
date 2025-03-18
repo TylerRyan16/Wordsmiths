@@ -67,7 +67,7 @@ const socketHandler = (io) => {
                 lobby.players[0].isHost = true;
                 io.to(lobbyId).emit("lobby-update", lobby.players);
             }
-            
+
             socket.leave(lobbyId);
         });
     
@@ -92,6 +92,22 @@ const socketHandler = (io) => {
             } catch (error) {
                 console.error("Failed to start game: ", error);
                 socket.emit("error", "failed to start game");
+            }
+        });
+
+        // CHANGE PLAYER COLOR
+        socket.on("update-player-color", ({lobbyCode, playerId, color}) => {
+            if (!lobbies[lobbyCode]) return;
+
+            console.log("heard update-player-color");
+
+            const lobby = lobbies[lobbyCode];
+            const player = lobby.players.find(p => p.id === playerId);
+
+            if (player){
+                player.playerColor = color;
+
+                io.to(lobbyCode).emit("lobby-update", lobby.players);
             }
         });
     

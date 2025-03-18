@@ -14,8 +14,40 @@ const Lobby = () => {
 
     // lobby code & player Name
     const { id: lobbyCode } = useParams();
-    const currentPlayer = playersInLobby?.find(player => player.id === socket.id);
     const playerName = location.state?.playerName || "Anonymous";
+
+    const [playerColors, setPlayerColors] = useState({});
+
+    const setPlayerColor = (playerId, color) => {
+        console.log(`Setting color for player ${playerId}: ${color}`);
+
+        socket.emit("update-player-color", ({lobbyCode, playerId, color}))
+    };
+
+    // colors
+    const playerColorOptions = [
+        "#FF6961", // Pastel Red
+        "#FFB347", // Pastel Orange
+        "#FDFD96", // Pastel Yellow
+        "#77DD77", // Pastel Green
+        "#99C5C4", // Pastel Teal
+        "#A7C7E7", // Pastel Blue
+        "#C3B1E1", // Pastel Purple
+        "#F4A7B9", // Pastel Pink
+        "#FFDAB9", // Pastel Peach
+        "#D8BFD8", // Pastel Lavender
+        "#AAF0D1", // Pastel Mint
+        "#B5EAEA", // Pastel Cyan
+        "#F49AC2", // Pastel Magenta
+        "#FF9E8F", // Pastel Coral
+        "#D2B48C", // Pastel Brown
+        "#C4B454", // Pastel Olive
+        "#F8E58C", // Pastel Gold
+        "#D6D6D6", // Pastel Silver
+        "#D3D3D3", // Pastel Gray
+        "#B0A4E3"  // Pastel Indigo
+    ];
+
 
     // run on page load
     useEffect(() => {
@@ -24,7 +56,8 @@ const Lobby = () => {
 
         // LOBBY PLAYER UPDATE
         socket.on("lobby-update", (players) => {
-            setPlayersInLobby(Array.isArray(players) ? players : []);
+            console.log("Updated lobby players: ", players);
+            setPlayersInLobby(players);
         });
 
         // START GAME
@@ -38,7 +71,7 @@ const Lobby = () => {
             socket.off("lobby-update");
             socket.off("start-game");
         };
-    }, [lobbyCode, navigate, playerName]);
+    }, []);
 
 
     // START GAME
@@ -83,10 +116,18 @@ const Lobby = () => {
                 <div className="list-area">
                     <h1>Players in Lobby</h1>
                     <ul className="player-list">
-                        {playersInLobby.map((player) => (
-                            <div className="player-display">
+                        {playersInLobby
+                        .slice() // create copy to avoid mutating state
+                        .sort((a,b) => (a.id === socket.id ? -1 : b.id === socket.id ? 1 : 0)) // move current player to the top
+                        .map((player, index) => (
+                            <div className="player-display" key={player.id}>
+                                <li
+                                    className={`player-name-text`}
+                                    style={{ backgroundColor: player.playerColor}} // Use stored color or default
+                                >
+                                    {player.name} {index === 0 ? "← You" : ""}
+                                </li>
                                 {player.isHost && <img src="/assets/host-icon.png" alt="host icon" className="host-icon"></img>}
-                                <li key={player.id} className={`player-name-text ? ${playerName === player.name ? "current-player" : ""}`} >{player.name}</li>
                             </div>
 
                         ))}
@@ -97,10 +138,20 @@ const Lobby = () => {
                 <button onClick={handleStartGame} className='start-game-button'>Start Game</button>
             </div>
 
-
             {/* AESTHETIC SETTINGS */}
             <div className="visual-settings-area">
                 <h1>Visual Settings</h1>
+                <h3>Player Color</h3>
+                <div className="player-colors-area">
+                    {playerColorOptions.map((color, index) => (
+                        <div
+                            key={index}
+                            style={{ backgroundColor: color }}
+                            className="color-option"
+                            onClick={() => setPlayerColor(socket.id, color)}>
+                        </div>
+                    ))}
+                </div>
             </div>
 
         </div>

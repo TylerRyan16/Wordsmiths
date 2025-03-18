@@ -6,6 +6,7 @@ class Player {
         this.points = 0;
         this.skipped = false;
         this.isHost = false;
+        this.playerColor = "transparent";
     }
 }
 

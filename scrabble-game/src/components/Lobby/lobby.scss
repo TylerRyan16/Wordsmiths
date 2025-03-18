@@ -11,10 +11,11 @@
 .lobby-page-area{
     display: flex;
     flex-direction: column;
-    justify-content: center;
     width: 33.3%;
-    height: 90%;
+    height: 85%;
     gap: 2%;
+    margin: 0;
+    padding: 0;
 
     h1{
         padding: 0;
@@ -40,6 +41,10 @@
     width: fit-content;
     gap: 10px;
     height: 100%;
+
+    h1{
+        font-size: clamp(24px, 1vw, 32px)
+    }
 }
 
 .copy-code-button{
@@ -65,17 +70,17 @@
 // LIST AREA
 .list-area{
     width: 100%;
-    height: 100%;
+    height: 90%;
     border-radius: 32px;
     background-color:  #e3d5ca;
 
     h1{
+        font-size: clamp(28px, 1vw, 32px);
         background-color: #B2E6A3;
-        color: azure;
+        color: #255C3C;
         border-radius: 16px;
         padding: 15px 10px;
         margin-bottom: 2%;
-        text-align: start;
     }
 }
 
@@ -104,18 +109,15 @@
     margin: 0px 5px;
     padding: 0px 10px;
     font-size: clamp(28px, 1vw, 52px);
-
-    &.current-player{
-        background-color: #dab48b;
-        border-radius: 8px;
-    }
+    background-color: #dab48b;
+    border-radius: 8px;
+    
 }
 
 
 // START GAME
 .start-game-button{
     padding: 25px 0px;
-    margin-bottom: 10%;
     text-decoration: none;
     color: black;
     background-color: #e3d5ca;
@@ -135,13 +137,14 @@
     display: flex;
     flex-direction: column;
     width: 25%;
-    height: 80%;
+    height: 70%;
     background-color: #e3d5ca;
     border-radius: 16px;
 
     h1{
+        font-size: clamp(24px, 1vw, 32px);
         background-color: #A7C7E7;
-        color: azure;
+        color: #2C3E50;
         border-radius: 16px;
         padding: 15px 10px;
         margin: 0;
@@ -158,10 +161,53 @@
     border-radius: 16px;
 
     h1{
+        font-size: clamp(24px, 1vw, 32px);
         background-color: #C3B1E1;
-        color: azure;
+        color: #4A235A;
         border-radius: 16px;
         padding: 15px 10px;
         margin: 0;
+    }
+
+    h3{
+        padding: 0px 10px;
+    }
+}
+
+// color selector
+.player-colors-area{
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 15px;
+    width: 90%;
+    height: 25%;
+    border-radius: 32px;
+    align-self: center;
+    background-color: #C3B1E1;
+    padding: 15px 10px;
+}
+
+.color-option{
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid #ddd;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.color-option:hover{
+    transform: scale(1.1);
+}
+
+// ipad pro
+@media screen and (max-width: 1025px) and (max-height: 1367px){
+    .lobby-page-area{
+        width: 40%;
+    }
+    
+    .player-colors-area{
+        height: 40%;
+        grid-template-columns: repeat(4, 1fr);
     }
 }

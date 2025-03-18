@@ -41,7 +41,7 @@ class Lobby{
     getLobbyState() {
         return {
             lobbyId: this.lobbyId,
-            players: this.players.map(p => ({id: p.id, name: p.name, hand: p.hand, points: p.points, skipped: p.skipped, isHost: p.isHost})),
+            players: this.players.map(p => ({id: p.id, name: p.name, hand: p.hand, points: p.points, skipped: p.skipped, isHost: p.isHost, playerColor: p.playerColor})),
             gameStarted: this.game !== null
         };
     }
