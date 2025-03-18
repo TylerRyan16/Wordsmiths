@@ -1,12 +1,12 @@
 import './topbar.scss';
-import {Link} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 
 const Topbar = () => {
+    const navigate = useNavigate();
 
     return (
         <div className ='bar-area'>
-            <h1 id = "game-title">Word Battle</h1>
-           {/* <Link to = {`user/${userId}`}></Link> */}
+            <h1 id = "game-title" onClick={() => navigate("/")}>Word Battle</h1>
         </div>
     );
 };

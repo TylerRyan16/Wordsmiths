@@ -4,21 +4,23 @@ import socket from "../Socket/socket";
 import './play.scss';
 
 const Play = () => {
-    const { id: lobbyCode } = useParams();
-
     const location = useLocation();
-    const [playersInGame, setPlayersInGame] = useState(location.state?.players || []);
-    const [playerHand, setPlayerHand] = useState([]);
-    const [playerLetters, setPlayerLetters] = useState([]);
-    
+    const lobbyCode = location.state?.code;
+    const players = location.state?.players;
+
+    const totalPlayers = players.length;
+
+    const currentPlayer = players?.find(player => player.id === socket.id);
+    const otherPlayers = players?.filter(player => player.id !== socket.id);
+
 
     useEffect(() => {
-        console.log("starting game in play component with code: ", lobbyCode);
-        console.log("starting game in play component with players: ", playersInGame);
+        // DEAL CARDS TO EACH PLAYER
+        socket.emit("deal-cards", totalPlayers);
 
         // DRAW CARD
         socket.on("card-drawn", (card) => {
-            setPlayerHand((prevHand) => [...prevHand, card]);
+            // notify all players of hand change
         });
 
         return () => {
@@ -26,7 +28,44 @@ const Play = () => {
             socket.off("card-drawn");
         };
 
-    }, [lobbyCode, playersInGame]);
+    }, [lobbyCode, players]);
+
+    // DISPLAYING PLAYERS HANDS
+    const displayPlayerHand = (playerID) => {
+        const player = players.find(p => p.id === playerID);
+        console.log("player: ", player);
+
+        if (!player) return <p>Loading player hand...</p>;
+
+        const isCurrentPlayer = player.id === currentPlayer?.id;
+
+        return (
+            <div className={`player-hand ${isCurrentPlayer ? "current" : ""}`}>
+                {/* Player Cards */}
+                {player.hand.length > 0 ? (
+                    <div className="player-cards" style={{ gap: `${calculateCardGap(player.hand.length)}px` }}>
+                        {player.hand.map((card, index) => (
+                            <div key={index}>{displayCard(card)}</div>
+                        ))}
+                    </div>
+                ) : (
+                    <p>No cards.</p>
+                )}
+
+                {/* Player Letters */}
+                {player.letters?.length > 0 ? (
+                    <div className="player-letters">
+                        {player.letters.map((letter, index) => (
+                            <div key={index}>{displayLetter(letter)}</div>
+                        ))}
+                    </div>
+                ) : (
+                    <p>No letters.</p>
+                )}
+            </div>
+        );
+    };
+
 
     // DRAWING CARD
     const handleDrawCard = () => {
@@ -86,17 +125,25 @@ const Play = () => {
         return newGap;
     };
 
+
+
     return (
         <div className="container">
             {/* Player Two */}
-            <div className="player-two-area">
-                <p>PlayerTwo</p>
-            </div>
+            {totalPlayers >= 2 && (
+                <div className="player-two-area">
+                    <h1 className="player-name-ingame">{otherPlayers[0]?.name || "Player 2"}</h1> 
+                    {displayPlayerHand(otherPlayers[0]?.id)}
+                </div>
+            )}
 
             {/* Player Three */}
-            <div className="player-three-area">
-                <p className="ingame-name left">PlayerThree</p>
-            </div>
+            {totalPlayers >= 3 && (
+                <div className="player-three-area">
+                    <h1 className="player-name-ingame">{otherPlayers[1]?.name || "Player 3"}</h1>
+                    {displayPlayerHand(otherPlayers[1]?.id)}
+                </div>
+            )}
 
 
             {/* MIDDLE AREA */}
@@ -105,12 +152,12 @@ const Play = () => {
                     {[...Array(10)].map((_, index) => {
                         return (
                             <img
-                            className="deck-card"
-                            key={index}
-                            src="/assets/cards/card-back.png"
-                            alt="card-pile"
-                            style={{ right: `${index * 4}px` }}
-                        />
+                                className="deck-card"
+                                key={index}
+                                src="/assets/cards/card-back.png"
+                                alt="card-pile"
+                                style={{ right: `${index * 4}px` }}
+                            />
                         );
                     })}
                 </div>
@@ -118,38 +165,19 @@ const Play = () => {
 
 
             {/* Player Four */}
-            <div className="player-four-area">
-                <p className="ingame-name right">PlayerFour</p>
-            </div>
+            {totalPlayers === 4 && (
+                <div className="player-four-area">
+                    <h1 className="player-name-ingame">{otherPlayers[2]?.name || "Player 4"}</h1>
+                    {displayPlayerHand(otherPlayers[2]?.id)}
+                </div>
+            )}
+
 
 
             {/* MAIN PLAYER AREA */}
             <div className="player-one-area">
-                {/* Player Cards */}
-                {playerHand.length > 0 ? (
-                    <div className="player-cards" style={{ gap: `${calculateCardGap(playerHand.length)}px` }}>
-                        {playerHand.map((card, index) => (
-                            <div key={index}>
-                                {displayCard(card)}
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p>Your hand is empty.</p>
-                )}
-
-                {/* Player Letters */}
-                {playerLetters.length > 0 ? (
-                    <div>
-                        {playerLetters.map((letter, index) => (
-                            <div key={index}>
-                                {displayLetter(letter)}
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p>No letters.</p>
-                )}
+                {displayPlayerHand(currentPlayer?.id)}
+                <h1 className="player-name-ingame">{currentPlayer?.name || "Unknown Player"}</h1>
             </div>
         </div>
     );

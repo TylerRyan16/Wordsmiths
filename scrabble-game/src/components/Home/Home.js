@@ -6,9 +6,7 @@ import LobbySelector from "../LobbySelector/LobbySelector";
 const Home = () => {
     // DISPLAY
     return (
-        <div className = "container">
-            <p>This is the home page.</p>
-
+        <div className="page-container">
             {/* Lobby Selector */}
             <LobbySelector />
         </div>
