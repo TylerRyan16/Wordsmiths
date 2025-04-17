@@ -1,50 +1,30 @@
-import Game from './game.js';
-import Player from'./player.js';
-
-class Lobby{
-    constructor(lobbyId){
+import Player from "./player.js";
+class Lobby {
+    constructor(lobbyId, players = [], gameStarted = false) {
         this.lobbyId = lobbyId;
-        this.players = [];
-        this.game = new Game();
+        this.players = players; // array of Player instances
+        this.gameStarted = gameStarted;
     }
 
-    addPlayer(playerId, playerName){
-        // avoid duplicates
-        if (this.players.some(player => player.id === playerId)) return;
-
-        // create new player object
-        const player = new Player(playerId, playerName);
-    
-        // push into players array
+    addPlayer(player) {
         this.players.push(player);
-        return player;
     }
 
-    removePlayer(playerId){
-        this.players = this.players.filter(player => player.id !== playerId);
+    removePlayer(playerId) {
+        this.players = this.players.filter(p => p.id !== playerId);
     }
 
-    startGame(){
-        if (this.players.length < 2){
-            throw new Error("Not enough players to start a game.");
-        }
-        
-        // create game and initialize players
-        this.game = new Game();
-        this.game.players = [...this.players]; // copy players into game instance
-    }
-    
-    getPlayersInLobby() {
-        return this.game.players;
-        
-    }
-    getLobbyState() {
+    toJSON() {
         return {
             lobbyId: this.lobbyId,
-            players: this.players.map(p => ({id: p.id, name: p.name, hand: p.hand, points: p.points, skipped: p.skipped, isHost: p.isHost, playerColor: p.playerColor})),
-            gameStarted: this.game !== null
+            players: this.players.map(p => p.toJSON()),
+            gameStarted: this.gameStarted
         };
     }
-}
 
+    static fromJSON(json) {
+        const players = json.players.map(p => Object.assign(new Player(), p));
+        return new Lobby(json.lobbyId, players, json.gameStarted);
+    }
+}
 export default Lobby;

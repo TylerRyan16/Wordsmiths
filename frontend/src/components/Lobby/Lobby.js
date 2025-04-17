@@ -9,6 +9,7 @@ const Lobby = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+
     // player list
     const [playersInLobby, setPlayersInLobby] = useState([]);
 
@@ -21,7 +22,7 @@ const Lobby = () => {
     const setPlayerColor = (playerId, color) => {
         console.log(`Setting color for player ${playerId}: ${color}`);
 
-        socket.emit("update-player-color", ({lobbyCode, playerId, color}))
+        socket.emit("update-player-color", ({ lobbyCode, playerId, color }))
     };
 
     // colors
@@ -51,28 +52,49 @@ const Lobby = () => {
 
     // run on page load
     useEffect(() => {
-        // join lobby
-        socket.emit("join-lobby", lobbyCode, playerName);
+        const playerId = location.state?.playerId || sessionStorage.getItem("playerId");
+        console.log("Found player id in lobby: ", playerId);
 
-        // LOBBY PLAYER UPDATE
-        socket.on("lobby-update", (players) => {
-            console.log("Updated lobby players: ", players);
+
+        const handleConnect = () => {
+            console.log("✅ Connected with socket ID:", socket.id);
+            socket.emit("join-lobby", lobbyCode, playerName, playerId);
+        };
+
+        const handleLobbyUpdate = (players) => {
+            console.log("📥 Lobby update:", players);
             setPlayersInLobby(players);
-        });
+        };
 
-        // START GAME
-        socket.on("start-game", (lobbyData) => {
-            navigate(`/play/${lobbyData.lobbyId}`, { state: { code: lobbyData.lobbyId, players: lobbyData.players } });
-        });
+        const handleStartGame = (lobbyData) => {
+            navigate(`/play/${lobbyData.lobbyId}`, {
+                state: {
+                    code: lobbyData.lobbyId,
+                    players: lobbyData.players,
+                },
+            });
+        };
 
 
-        //cleanup on unmount
+        // ensure socket is connected first
+        if (!socket.connected) {
+            console.log("🔌 Connecting socket...");
+            socket.connect();
+            socket.once("connect", handleConnect);
+        } else {
+            console.log("Socket already connected:", socket.id);
+            socket.emit("join-lobby", lobbyCode, playerName, playerId);
+        }
+
+        socket.on("lobby-update", handleLobbyUpdate);
+        socket.on("start-game", handleStartGame);
+
         return () => {
-            socket.off("lobby-update");
-            socket.off("start-game");
+            socket.off("connect", handleConnect);
+            socket.off("lobby-update", handleLobbyUpdate);
+            socket.off("start-game", handleStartGame);
         };
     }, []);
-
 
     // START GAME
     const handleStartGame = () => {
@@ -83,7 +105,7 @@ const Lobby = () => {
     };
 
     const leaveLobby = () => {
-        socket.emit('leave-lobby', lobbyCode);
+        socket.emit('leave-lobby', lobbyCode, sessionStorage.getItem("playerId"));
         navigate("/");
     }
 
@@ -117,20 +139,23 @@ const Lobby = () => {
                     <h1>Players in Lobby</h1>
                     <ul className="player-list">
                         {playersInLobby
-                        .slice() // create copy to avoid mutating state
-                        .sort((a,b) => (a.id === socket.id ? -1 : b.id === socket.id ? 1 : 0)) // move current player to the top
-                        .map((player, index) => (
-                            <div className="player-display" key={player.id}>
-                                <li
-                                    className={`player-name-text`}
-                                    style={{ backgroundColor: player.playerColor}} // Use stored color or default
-                                >
-                                    {player.name} {index === 0 ? "← You" : ""}
-                                </li>
-                                {player.isHost && <img src="/assets/host-icon.png" alt="host icon" className="host-icon"></img>}
-                            </div>
+                            .slice() // create copy to avoid mutating state
+                            .sort((a, b) => {
+                                const currentPlayerId = sessionStorage.getItem('playerId');
+                                return a.id === currentPlayerId ? -1 : b.id === currentPlayerId ? 1 : 0;
+                            }) // move current player to the top
+                            .map((player, index) => (
+                                <div className="player-display" key={player.id}>
+                                    <li
+                                        className={`player-name-text`}
+                                        style={{ backgroundColor: player.playerColor }} // Use stored color or default
+                                    >
+                                        {player.name} {player.id === sessionStorage.getItem("playerId") ? "← You" : ""}
+                                    </li>
+                                    {player.isHost && <img src="/assets/host-icon.png" alt="host icon" className="host-icon"></img>}
+                                </div>
 
-                        ))}
+                            ))}
                     </ul>
                 </div>
 

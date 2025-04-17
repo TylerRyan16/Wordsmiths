@@ -1,50 +1,69 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {useEffect} from 'react';
+import { useEffect } from 'react';
 import "./lobbySelector.scss";
-import socket, {connectSocket} from "../Socket/socket";
+import socket, { connectSocket } from "../Socket/socket";
+import { v4 as uuidv4 } from "uuid";
 
 const LobbySelector = () => {
     const [lobbyCode, setLobbyCode] = useState("");
     const [playerName, setPlayerName] = useState("");
     const navigate = useNavigate();
 
+    // page load
     useEffect(() => {
+        // create and store persistent ID in session storage
+        if (!sessionStorage.getItem("playerId")) {
+            sessionStorage.setItem("playerId", uuidv4());
+        }
+
         connectSocket();
-        
+
         // once lobby created, navigate to correct route
         socket.on("lobby-created", (lobbyId) => {
             setLobbyCode(lobbyId);
-            navigate(`/lobby/${lobbyId}`, {state: {playerName}});
+            navigate(`/lobby/${lobbyId}`, {
+                state: {
+                    playerName,
+                    playerId: sessionStorage.getItem("playerId"),
+                }
+            });
         });
 
         return () => {
-            socket.off("lobby-created"); 
+            socket.off("lobby-created");
         };
     })
 
+    // CREATE LOBBY
     const createLobby = async (name) => {
         if (!name.trim()) {
             alert("Please enter your name!");
             return;
         }
 
-        console.log("emitting create lobby");
+        console.log("emitting create lobby with name: ", name);
+
         // call create lobby and get lobby data 
-        socket.emit("create-lobby", name);
+        socket.emit("create-lobby", name, sessionStorage.getItem("playerId"));
     };
 
     const joinLobby = () => {
-        if (!playerName.trim()){
+        if (!playerName.trim()) {
             alert("Please enter your name!");
             return;
         }
-        if (!lobbyCode.trim()){
+        if (!lobbyCode.trim()) {
             alert("Please enter a valid lobby code!");
             return;
         }
 
-        navigate(`/lobby/${lobbyCode}`, {state: {playerName}})
+        navigate(`/lobby/${lobbyCode}`, {
+            state: {
+                playerName,
+                playerId: sessionStorage.getItem("playerId"),
+            }
+        });
     };
 
     // DISPLAY
@@ -66,7 +85,7 @@ const LobbySelector = () => {
             </div>
 
             <p>OR</p>
-            
+
             {/* LOBBY CODE */}
             <input
                 type="text"
@@ -79,11 +98,11 @@ const LobbySelector = () => {
 
             {/* JOIN LOBBY */}
             <div className="horizontal-flex">
-                <button onClick={joinLobby} className = "join-lobby-button">Join Lobby</button>
+                <button onClick={joinLobby} className="join-lobby-button">Join Lobby</button>
             </div>
 
-        
-            
+
+
         </div>
     );
 };
